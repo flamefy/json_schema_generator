@@ -1,0 +1,52 @@
+{
+  "$schema": "http://json-schema.org/draft-04/schema#",
+
+  "definitions": {
+    "address": {
+      "id": "/address/1.json",
+      "type": "object",
+      "properties": {
+        "street_address": { "type": "string" },
+        "city":           { "type": "string" },
+        "zip":            { "type": "string", "minLength": 5 }
+      },
+      "required": ["street_address", "city", "zip"]
+    }
+  },
+
+  "id": "/user/1.json",
+  "type": "object",
+
+  "properties": {
+    "firstname": {
+      "id": "/properties/firstname",
+      "type": "string"
+    },
+    "lastname": {
+      "id": "/properties/lastname",
+      "type": "string"
+    },
+    "age": {
+      "id": "/properties/age",
+      "type": "integer"
+    },
+    "created_at": {
+      "id": "/properties/created_at",
+      "type": "string",
+      "format": "date-time"
+    },
+    "type": {
+      "id": "/properties/type",
+      "type": "string",
+      "enum": ["human", "alien"]
+    },
+    "billing_address": {
+      "$ref": "#/definitions/address"
+    },
+    "shipping_address": {
+      "$ref": "#/definitions/address"
+    }
+  },
+  "required": ["firstname", "lastname", "type", "billing_address"]
+}
+
