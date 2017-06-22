@@ -14,7 +14,6 @@ GEM
       coderay (~> 1.1.0)
       method_source (~> 0.8.1)
       slop (~> 3.4)
-    rack (2.0.3)
     rake (10.5.0)
     rspec (3.6.0)
       rspec-core (~> 3.6.0)
@@ -30,8 +29,6 @@ GEM
       rspec-support (~> 3.6.0)
     rspec-support (3.6.0)
     slop (3.6.0)
-    stub_server (0.2.1)
-      rack
 
 PLATFORMS
   ruby
@@ -43,7 +40,6 @@ DEPENDENCIES
   pry
   rake (~> 10.0)
   rspec (~> 3.0)
-  stub_server
 
 BUNDLED WITH
    1.14.6
