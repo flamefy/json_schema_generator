@@ -37,7 +37,6 @@
     },
     "type": {
       "id": "/properties/type",
-      "type": "string",
       "enum": ["human", "alien"]
     },
     "billing_address": {

@@ -43,7 +43,7 @@ module JSON
       private
 
       def set_value(name, value, properties)
-        match(properties["type"]) do
+        match(properties["type"] || "any") do
           with("object") {
             klass = @prefix.const_get(JSON::Schema::Utils.classify(properties["name"]))
             if value.is_a?(klass)
