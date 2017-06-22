@@ -17,23 +17,31 @@ module JSON
 
       def to_hash
         check_required
-        h = {}
-        @attributes.each { |name, value|
+        @attributes.map { |name, value|
           check_value(name, value, @properties[name])
-          h.merge!({
-            name => value.public_methods.include?(:to_hash) ? value.to_hash : value
-          })
-        }
-        h
+          [name, get_value(value)]
+        }.to_h
+      end
+
+      def get_value(value)
+        if value.is_a?(Array)
+          value.map { |element|
+            get_value(element)
+          }
+        else
+          value.public_methods.include?(:to_hash) ? value.to_hash : value
+        end
       end
 
       protected
 
       def []=(name, value)
+        return if value.nil?
+        return if @ignore_unknown_attributes and @properties[name].nil?
         name = name.to_s
-        raise ArgumentError.new("invalid attribute `#{name}'") if @properties[name].nil?
+        raise ArgumentError.new("invalid attribute `#{name}'") if @properties[name].nil? and not @ignore_unknown_attributes
         check_value(name, value, @properties[name])
-        set_value(name, value, @properties[name])
+        @attributes[name] = set_element_value(value, @properties[name])
       end
 
       def [](name)
@@ -42,24 +50,33 @@ module JSON
 
       private
 
-      def set_value(name, value, properties)
+      def set_array_value(value, properties)
+        value.map { |element|
+          set_element_value(element, properties["items"])
+        }
+      end
+
+      def set_element_value(value, properties)
         match(properties["type"] || "any") do
           with("object") {
             klass = @prefix.const_get(JSON::Schema::Utils.classify(properties["name"]))
             if value.is_a?(klass)
-              @attributes[name] = value
+              value
             elsif value.is_a?(Hash)
-              @attributes[name] = klass.new(value)
+              klass.new(value)
             else
               raise ArgumentError.new("#{name} must be a #{klass} or Hash")
             end
           }
           with("string") {
-            @attributes[name] = value
-            @attributes[name] = DateTime.parse(value).iso8601 if properties["format"] && properties["format"] == "date-time"
+            return DateTime.parse(value).iso8601(3) if properties["format"] && properties["format"] == "date-time"
+            value
+          }
+          with("array") {
+            set_array_value(value, properties)
           }
           with(_) {
-            @attributes[name] = value
+            value
           }
         end
       end
@@ -71,6 +88,12 @@ module JSON
           properties.merge!({"oneOf" => properties["oneOf"].map { |schema|
             get_properties(schema)
           }})
+        elsif properties["type"] == "array"
+          if properties["items"]
+            properties.merge!("items" => get_properties(properties["items"]))
+          else
+            properties.merge!({"items" => {"type" => "any"}})
+          end
         else
           properties
         end
@@ -96,11 +119,7 @@ module JSON
 
       def check_required
         @required.each do |name|
-          begin
-            check_value(name, @attributes[name], @properties[name])
-          rescue
-            raise ArgumentError.new("invalid attribut `#{name}'")
-          end
+          check_value(name, @attributes[name], @properties[name])
         end
       end
 
@@ -132,7 +151,7 @@ module JSON
         raise ArgumentError.new("invalid value for `#{name}' (#{value}), value `#{duplicate}' is duplicated") if properties["uniqueItems"] && duplicate
         # items
         value.each { |v|
-          check_type(name, v, properties["items"]["type"], JSON::Schema::Utils.classify(properties["name"]))
+          check_type(name, v, properties["items"]["type"], JSON::Schema::Utils.classify(properties["items"]["name"]))
         } if properties["items"]
       end
 

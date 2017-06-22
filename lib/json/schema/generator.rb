@@ -19,8 +19,10 @@ module JSON
       # Options :
       # * root_class : string
       # * module : string | nil
+      # * ignore_unknown_attributes
+      # * camelcase_attributes
       def initialize(schema, **options)
-        @options = {root_class: "root", module: nil}.merge!(options)
+        @options = {root_class: "root", module: nil, ignore_unknown_attributes: true, camelcase_attributes: false}.merge!(options)
         @schema = schema
         @json = read_schema(schema)
         @klasses = {}
@@ -44,6 +46,8 @@ module JSON
                  else
                    Object
                  end
+        ignore_unknown_attributes = @options[:ignore_unknown_attributes]
+        camelcase_attributes = @options[:camelcase_attributes]
         klass_name = JSON::Schema::Utils.classify(name)
         unless prefix.const_defined?(klass_name)
           klass = ::Class.new(JSON::Schema::Class)
@@ -52,12 +56,18 @@ module JSON
             define_method(:initialize) do |values = {}|
               @properties = properties
               @json = json
+              @ignore_unknown_attributes = ignore_unknown_attributes
+              @camelcase_attributes = camelcase_attributes
               super()
               @required = required
               @attributes = {}
               @prefix = prefix
               values.each { |property, value|
-                self[property.to_s] = value
+                if camelcase_attributes
+                  self[property.to_s.gsub(/_(.)/) { "#{$1.upcase}" }] = value
+                else
+                  self[property.to_s] = value
+                end
               }
             end
 

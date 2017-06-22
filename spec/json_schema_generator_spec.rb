@@ -2,7 +2,7 @@ require "spec_helper"
 
 describe JSON::Schema::Generator do
   let(:schema) {
-    File.join(File.expand_path(File.dirname(__FILE__)), "schema.json")
+    File.join(File.expand_path(File.dirname(__FILE__)), "simple.json")
   }
 
   it "has a version number" do
@@ -14,7 +14,7 @@ describe JSON::Schema::Generator do
       JSON::Schema::Generator.generate(schema, root_class: "User", module: "Test")
     end
 
-    it "should have new difined classes" do
+    it "should have new defined classes" do
       expect(Object.const_defined?(Test::User.to_s)).to eq(true)
       expect(Object.const_defined?(Test::Address.to_s)).to eq(true)
     end
@@ -36,7 +36,7 @@ describe JSON::Schema::Generator do
       expect(user.firstname).to eq("John")
       expect(user.lastname).to eq("Doe")
       expect(user.age).to eq(32)
-      expect(user.created_at).to eq("2017-06-19T13:23:17+00:00")
+      expect(user.created_at).to eq("2017-06-19T13:23:17.000+00:00")
       expect(user.type).to eq("human")
       expect(user.billing_address.class).to eq(Test::Address)
       expect(user.shipping_address).to be_nil
@@ -47,7 +47,7 @@ describe JSON::Schema::Generator do
         "firstname" => "John",
         "lastname" => "Doe",
         "age" => 32,
-        "created_at" => "2017-06-19T13:23:17+00:00",
+        "created_at" => "2017-06-19T13:23:17.000+00:00",
         "type" => "human",
         "billing_address" => {
           "street_address" => "Diagon Alley",
