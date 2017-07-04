@@ -1,5 +1,7 @@
 require 'json/schema/utils'
+require 'json/schema/errors'
 require 'pattern-match'
+require 'uri'
 using PatternMatch
 
 module JSON
@@ -41,7 +43,7 @@ module JSON
         name = name.to_s
         raise ArgumentError.new("invalid attribute `#{name}'") if @properties[name].nil? and not @ignore_unknown_attributes
         check_value(name, value, @properties[name])
-        @attributes[name] = set_element_value(value, @properties[name])
+        @attributes[name] = set_element_value(value, @properties[name], name)
       end
 
       def [](name)
@@ -50,13 +52,13 @@ module JSON
 
       private
 
-      def set_array_value(value, properties)
+      def set_array_value(value, properties, name)
         value.map { |element|
-          set_element_value(element, properties["items"])
+          set_element_value(element, properties["items"], name)
         }
       end
 
-      def set_element_value(value, properties)
+      def set_element_value(value, properties, name)
         match(properties["type"] || "any") do
           with("object") {
             klass = @prefix.const_get(JSON::Schema::Utils.classify(properties["name"]))
@@ -70,10 +72,16 @@ module JSON
           }
           with("string") {
             return DateTime.parse(value).iso8601(3) if properties["format"] && properties["format"] == "date-time"
+            raise ArgumentError.new("#{name} must be an UUID") if properties["format"] && properties["format"] == "uuid" and (value =~ /^[0-9a-f]{8}-[0-9a-f]{4}-[1-5][0-9a-f]{3}-[89ab][0-9a-f]{3}-[0-9a-f]{12}$/).nil?
+            raise ArgumentError.new("#{name} must be an URI") if properties["format"] && properties["format"] == "uri" and (value =~ URI::regexp).nil?
             value
           }
           with("array") {
-            set_array_value(value, properties)
+            set_array_value(value, properties, name)
+          }
+          with("number") {
+            raise ArgumentError.new("#{name} must be a #{properties["format"]}") if properties["format"] && properties["format"] =~ /^single|^double/ && value.is_a?(Integer)
+            value
           }
           with(_) {
             value
@@ -109,7 +117,7 @@ module JSON
               [nil, nil]
             end
           }
-          raise InvalidSchemaReference.new("path") if ref.nil?
+          raise InvalidSchemaReference.new("invalide reference #{path}") if ref.nil?
           ref.merge!({"name" => name})
         else
           warn "External ref not supported"

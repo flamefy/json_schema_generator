@@ -1,0 +1,43 @@
+{
+  "type": "object",
+  "properties": {
+    "string": {
+      "type": "string"
+    },
+    "datetime": {
+      "type": "string",
+      "format": "date-time"
+    },
+    "uri": {
+      "type": "string",
+      "format": "uri"
+    },
+    "uuid": {
+      "type": "string",
+      "format": "uuid"
+    },
+    "integer": {
+      "type": "integer"
+    },
+    "number": {
+      "type": "number"
+    },
+    "single": {
+      "type": "number",
+      "format": "single64"
+    },
+    "double": {
+      "type": "number",
+      "format": "double64"
+    },
+    "boolean": {
+      "type": "boolean"
+    },
+    "array_of_integer": {
+      "type": "array",
+      "items": {
+        "type": "integer"
+      }
+    }
+  }
+}
