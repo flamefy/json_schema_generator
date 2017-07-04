@@ -25,6 +25,25 @@ module JSON
         }.to_h
       end
 
+      def valid?
+        begin
+          check_required
+          @attributes.each { |name, value|
+            check_value(name, value, @properties[name])
+          }
+          true
+        rescue
+          false
+        end
+      end
+
+      def valid!
+        check_required
+        @attributes.each { |name, value|
+          check_value(name, value, @properties[name])
+        }
+      end
+
       def get_value(value)
         if value.is_a?(Array)
           value.map { |element|

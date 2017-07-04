@@ -16,7 +16,6 @@ describe JSON::Schema::Generator do
       expect(Object.const_defined?(TestArray::Coordinates.to_s)).to eq(true)
     end
 
-
     it "create a new user from hash" do
       user = TestArray::User.new({
         "firstname" => "John",

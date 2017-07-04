@@ -19,7 +19,6 @@ describe JSON::Schema::Generator do
       expect(Object.const_defined?(Test::Address.to_s)).to eq(true)
     end
 
-
     it "create a new user from hash" do
       user = Test::User.new({
         "firstname" => "John",
@@ -33,6 +32,7 @@ describe JSON::Schema::Generator do
           "zip" => "EC2R 6AB"
         }
       })
+      expect(user.valid?).to be(true)
       expect(user.firstname).to eq("John")
       expect(user.lastname).to eq("Doe")
       expect(user.age).to eq(32)
@@ -55,6 +55,22 @@ describe JSON::Schema::Generator do
           "zip" => "EC2R 6AB"
         }
       })
+    end
+
+    it "does not validate an incomplete user" do
+      user = Test::User.new({
+        "lastname" => "Doe",
+        "age" => 32,
+        "created_at" => "Mon 19 June, 13:23:17",
+        "type" => "human",
+        "billing_address" => {
+          "street_address" => "Diagon Alley",
+          "city" => "London",
+          "zip" => "EC2R 6AB"
+        }
+      })
+      expect(user.valid?).to be(false)
+      expect{user.valid!}.to raise_error(ArgumentError, "firstname must be a String")
     end
   end
 end
