@@ -58,9 +58,9 @@ module JSON
               @json = json
               @ignore_unknown_attributes = ignore_unknown_attributes
               @camelcase_attributes = camelcase_attributes
-              super()
               @required = required
               @attributes = {}
+              super()
               @prefix = prefix
               values.each { |property, value|
                 if camelcase_attributes

@@ -11,6 +11,7 @@ module JSON
         @properties = @properties.map { |name, properties|
           [name, get_properties(properties)]
         }.to_h
+        set_defaults
       end
 
       def to_json
@@ -55,6 +56,13 @@ module JSON
       end
 
       protected
+
+      def set_defaults
+        @properties.each { |name, properties|
+          @attributes[name] = properties["default"].dup if properties["default"]
+          @attributes[name] = [] if properties["type"] == "array" && @required.include?(name)
+        }
+      end
 
       def []=(name, value)
         return if value.nil?

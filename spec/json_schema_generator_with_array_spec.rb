@@ -18,6 +18,7 @@ describe JSON::Schema::Generator do
 
     it "create a new user from hash" do
       user = TestArray::User.new({
+        "human" => false,
         "firstname" => "John",
         "lastname" => "Doe",
         "area" => [
@@ -49,6 +50,7 @@ describe JSON::Schema::Generator do
       expect(user.area[0][0]).to be_a(TestArray::Coordinates)
       expect(user.area[0][0].x).to eq(0)
       expect(user.to_hash()).to eq({
+        "human" => false,
         "firstname" => "John",
         "lastname" => "Doe",
         "area" => [
@@ -68,6 +70,51 @@ describe JSON::Schema::Generator do
           }
         ]
       })
+    end
+
+    it "create a new user with an empty area" do
+      user = TestArray::User.new({
+        "firstname" => "John",
+        "lastname" => "Doe",
+        "area" => [],
+        "addresses" => [
+          {
+            "street_address" => "Diagon Alley",
+            "city" => "London",
+            "zip" => "EC2R 6AB"
+          },
+          {
+            "street_address" => "King's Cross Station",
+            "city" => "London",
+            "zip" => "EC2R 6AB"
+          }
+        ]
+      })
+      expect(user.firstname).to eq("John")
+      expect(user.area).to eq([])
+      expect(user.human).to eq(true)
+    end
+
+    it "create a new user with an empty area not set" do
+      user = TestArray::User.new({
+        "firstname" => "John",
+        "lastname" => "Doe",
+        "addresses" => [
+          {
+            "street_address" => "Diagon Alley",
+            "city" => "London",
+            "zip" => "EC2R 6AB"
+          },
+          {
+            "street_address" => "King's Cross Station",
+            "city" => "London",
+            "zip" => "EC2R 6AB"
+          }
+        ]
+      })
+      expect(user.firstname).to eq("John")
+      expect(user.area).to eq([])
+      expect(user.human).to eq(true)
     end
   end
 end
